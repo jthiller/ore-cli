@@ -45,13 +45,7 @@ impl Miner {
             let cutoff_time = self.get_cutoff(proof, args.buffer_time).await;
 
             // Run drillx
-            let solution = Self::find_hash_par(
-                proof,
-                cutoff_time,
-                args.threads,
-                config.min_difficulty as u32,
-            )
-            .await;
+            let solution = Self::find_hash_par(proof, cutoff_time, args.threads, 19).await;
 
             // Submit most difficult hash
             let mut compute_budget = 500_000;
@@ -107,7 +101,8 @@ impl Miner {
                                     best_nonce = nonce;
                                     best_difficulty = difficulty;
                                     best_hash = hx;
-                                    if best_difficulty.gt(&*global_best_difficulty.read().unwrap()) {
+                                    if best_difficulty.gt(&*global_best_difficulty.read().unwrap())
+                                    {
                                         *global_best_difficulty.write().unwrap() = best_difficulty;
                                     }
                                 }
@@ -115,13 +110,13 @@ impl Miner {
 
                             // Exit if time has elapsed
                             if nonce % 100 == 0 {
-                                let global_best_difficulty = *global_best_difficulty.read().unwrap();
+                                let global_best_difficulty =
+                                    *global_best_difficulty.read().unwrap();
                                 if timer.elapsed().as_secs().ge(&cutoff_time) {
                                     if i == 0 {
                                         progress_bar.set_message(format!(
                                             "Mining... ({} / {} difficulty)",
-                                            global_best_difficulty,
-                                            min_difficulty,
+                                            global_best_difficulty, min_difficulty,
                                         ));
                                     }
                                     if global_best_difficulty.ge(&min_difficulty) {
